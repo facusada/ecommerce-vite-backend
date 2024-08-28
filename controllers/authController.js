@@ -1,18 +1,33 @@
-import admin from 'firebase-admin';
+import { auth } from '../config/firebase.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-export const loginUser = async (req, res) => {
+dotenv.config();
+
+const register = async (req, res) => {
   const { email, password } = req.body;
-
   try {
-    const user = await admin.auth().getUserByEmail(email);
-
-    const token = jwt.sign({ uid: user.uid, email: user.email }, process.env.JWT_SECRET_KEY, {
-      expiresIn: '1h',
-    });
-
-    res.json({ success: true, token });
+    const userRecord = await auth.createUser({ email, password });
+    res.status(201).json({ message: 'User registered successfully', user: userRecord });
   } catch (error) {
-    res.status(401).json({ success: false, message: 'Authentication failed', error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
+
+const login = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await auth.getUserByEmail(email);
+    
+    const token = jwt.sign({ uid: user.uid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+    
+    res.status(200).json({ message: 'Login successful', token });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export {
+  register,
+  login
+}
