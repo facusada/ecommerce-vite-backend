@@ -17,14 +17,28 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email } = req.body;
+  if (!req.body.idToken) {
+    return res.status(400).json({ error: 'Token is required' });
+  }
+
   try {
-    const user = await auth.getUserByEmail(email);
+    const { idToken } = req.body;
     
-    const token = jwt.sign({ uid: user.uid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-    saveToken(token, user.uid);
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const token = jwt.sign({ uid: uid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+
+    saveToken(token, uid);
+
+    let userData = {
+      token,
+      'user': {
+        uid: uid,
+        email: decodedToken.email,
+      }
+    }
     
-    res.status(200).json({ message: 'Login successful', token });
+    res.status(200).json({ message: 'Login successful', userData });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
