@@ -13,3 +13,4 @@ This is the backend for an e-commerce application, built with Node.js and Expres
 - **Express**: Web framework for Node.js to handle routing and middleware.
 - **Firebase Admin SDK**: For managing user authentication and other Firebase features.
 - **JWT (jsonwebtoken)**: For generating and verifying JSON Web Tokens.
+- **Render**: This project is deployed on Render.
